@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "_id": "test-project-1",
+    "name": "Updated Project Name",
+    "description": "Updated description",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "columns": [
+      { "id": "todo", "title": "To Do", "order": 0 },
+      { "id": "inprogress", "title": "In Progress", "order": 1 },
+      { "id": "done", "title": "Done", "order": 2 }
+    ]
+  }
+}

@@ -1,0 +1,123 @@
+name: Production Monitoring
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  health-monitoring:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check backend health
+      id: backend-health
+      run: |
+        echo "Checking backend health..."
+        response=$(curl -s -w "%{http_code}" ${{ secrets.BACKEND_URL }}/api/health)
+        http_code=$(echo $response | tail -c 4)
+        
+        if [ "$http_code" -eq 200 ]; then
+          echo "✅ Backend health check passed"
+          echo "backend_status=healthy" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Backend health check failed with HTTP $http_code"
+          echo "backend_status=unhealthy" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+        
+    - name: Check detailed backend health
+      if: steps.backend-health.outputs.backend_status == 'healthy'
+      run: |
+        echo "Running detailed health check..."
+        response=$(curl -s ${{ secrets.BACKEND_URL }}/api/health/detailed)
+        echo "Detailed health response: $response"
+        
+        status=$(echo $response | jq -r '.status')
+        database_status=$(echo $response | jq -r '.dependencies.mongodb.status')
+        
+        echo "Overall status: $status"
+        echo "Database status: $database_status"
+        
+        if [ "$database_status" != "OK" ]; then
+          echo "⚠️ Database connection issue detected"
+        fi
+        
+    - name: Check system metrics
+      if: steps.backend-health.outputs.backend_status == 'healthy'
+      run: |
+        echo "Checking system metrics..."
+        response=$(curl -s ${{ secrets.BACKEND_URL }}/api/metrics)
+        
+        error_rate=$(echo $response | jq -r '.data.errorRate')
+        memory_used=$(echo $response | jq -r '.data.memory.heapUsed')
+        uptime=$(echo $response | jq -r '.data.uptimeFormatted')
+        
+        echo "Error rate: $error_rate%"
+        echo "Memory used: $memory_used bytes"
+        echo "Uptime: $uptime"
+        
+        # Alert if error rate is too high
+        if (( $(echo "$error_rate > 5" | bc -l) )); then
+          echo "⚠️ High error rate detected: $error_rate%"
+        fi
+        
+    - name: Check frontend availability
+      run: |
+        echo "Checking frontend availability..."
+        response=$(curl -s -w "%{http_code}" ${{ secrets.FRONTEND_URL }})
+        http_code=$(echo $response | tail -c 4)
+        
+        if [ "$http_code" -eq 200 ]; then
+          echo "✅ Frontend is accessible"
+        else
+          echo "❌ Frontend check failed with HTTP $http_code"
+          exit 1
+        fi
+        
+    - name: Test API endpoints
+      if: steps.backend-health.outputs.backend_status == 'healthy'
+      run: |
+        echo "Testing critical API endpoints..."
+        
+        # Test projects endpoint
+        projects_response=$(curl -s -w "%{http_code}" ${{ secrets.BACKEND_URL }}/api/projects)
+        projects_code=$(echo $projects_response | tail -c 4)
+        
+        if [ "$projects_code" -eq 200 ]; then
+          echo "✅ Projects API endpoint working"
+        else
+          echo "❌ Projects API endpoint failed with HTTP $projects_code"
+          exit 1
+        fi
+        
+    - name: Performance check
+      if: steps.backend-health.outputs.backend_status == 'healthy'
+      run: |
+        echo "Running performance check..."
+        
+        # Measure response time
+        start_time=$(date +%s%N)
+        curl -s ${{ secrets.BACKEND_URL }}/api/health > /dev/null
+        end_time=$(date +%s%N)
+        
+        duration=$(( (end_time - start_time) / 1000000 )) # Convert to milliseconds
+        echo "Health endpoint response time: ${duration}ms"
+        
+        if [ "$duration" -gt 2000 ]; then
+          echo "⚠️ Slow response detected: ${duration}ms"
+        fi
+        
+    - name: Monitoring summary
+      if: always()
+      run: |
+        echo "=== Monitoring Summary ==="
+        echo "Timestamp: $(date -u)"
+        echo "Backend Status: ${{ steps.backend-health.outputs.backend_status || 'failed' }}"
+        
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ All monitoring checks passed"
+        else
+          echo "❌ Some monitoring checks failed"
+        fi

@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "summary": "This project summary shows that you have 3 tasks total: 1 in To Do, 1 in Progress, and 1 completed. The project appears to be making good progress with tasks distributed across different stages of completion. The most recent activity was updating Task 2 to In Progress status.",
+    "metadata": {
+      "tokensUsed": 150,
+      "costEstimate": "$0.002",
+      "generatedAt": "2024-01-01T00:00:00.000Z",
+      "projectId": "test-project-id",
+      "taskCount": 3
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "answer": "Based on your project data, you currently have 1 task in progress: 'Test Task 2'. This task was moved to the In Progress column and appears to be actively being worked on.",
+    "question": "What tasks are currently in progress?",
+    "metadata": {
+      "tokensUsed": 75,
+      "costEstimate": "$0.001",
+      "answeredAt": "2024-01-01T00:00:00.000Z",
+      "projectId": "test-project-id",
+      "contextUsed": ["tasks", "project"]
+    }
+  }
+}

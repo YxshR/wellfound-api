@@ -1,0 +1,42 @@
+{
+  "name": "project-task-management-system",
+  "version": "1.0.0",
+  "description": "A Project & Task Management System with AI-powered assistant",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start:prod": "cd backend && npm run start",
+    "install-deps": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "test": "concurrently \"cd backend && npm test\" \"cd frontend && npm test\"",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "heroku-postbuild": "npm run install-deps && npm run build",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:backend": "./scripts/deploy.sh --backend-only",
+    "deploy:frontend": "./scripts/deploy.sh --frontend-only",
+    "pre-deploy-check": "./scripts/pre-deploy-check.sh",
+    "monitor": "node scripts/monitor.js",
+    "monitor:once": "node scripts/monitor.js --once",
+    "health-check": "cd backend && node healthcheck.js",
+    "health-check:detailed": "curl -s http://localhost:5001/api/health/detailed | jq .",
+    "metrics": "curl -s http://localhost:5001/api/metrics | jq ."
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "react",
+    "express",
+    "mongodb",
+    "task-management",
+    "kanban",
+    "ai",
+    "gemini"
+  ],
+  "author": "",
+  "license": "MIT"
+}

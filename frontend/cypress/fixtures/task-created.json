@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "_id": "new-task-id",
+    "projectId": "test-project-id",
+    "title": "New Test Task",
+    "description": "This is a test task description",
+    "status": "todo",
+    "order": 1,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
